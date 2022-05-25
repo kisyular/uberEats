@@ -4,15 +4,45 @@ import { StyleSheet } from 'react-native'
 import { NavigationContainer } from '@react-navigation/native'
 // import restaurants from './assets/data/restaurants.json'
 import RootNavigator from './src/navigation'
+import { Amplify } from 'aws-amplify'
+import awsconfig from './src/aws-exports'
+import { withAuthenticator } from 'aws-amplify-react-native'
+import AuthContextProvider from './src/contexts/AuthContext'
+import BasketContextProvider from './src/contexts/BasketContext'
+import OrderContextProvider from './src/contexts/OrderContext'
 
-export default function App() {
+Amplify.configure({
+	...awsconfig,
+	Analytics: {
+		disabled: true,
+	},
+})
+
+const App = () => {
 	return (
 		<NavigationContainer>
-			<RootNavigator />
-
+			<AuthContextProvider>
+				<BasketContextProvider>
+					<OrderContextProvider>
+						<RootNavigator />
+					</OrderContextProvider>
+				</BasketContextProvider>
+			</AuthContextProvider>
 			<StatusBar style='light' />
 		</NavigationContainer>
 	)
+}
+
+const signUpConfig = {
+	signUpFields: [
+		{
+			label: 'Your Name',
+			key: 'name',
+			required: true,
+			displayOrder: 1,
+			type: 'string',
+		},
+	],
 }
 
 const styles = StyleSheet.create({
@@ -24,3 +54,5 @@ const styles = StyleSheet.create({
 		padding: 10,
 	},
 })
+
+export default withAuthenticator(App, { signUpConfig })
